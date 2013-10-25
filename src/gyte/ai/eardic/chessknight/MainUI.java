@@ -5,9 +5,8 @@
  */
 package gyte.ai.eardic.chessknight;
 
+import aima.gui.demo.search.EightPuzzleDemo;
 import gyte.ai.eardic.chessknight.board.ChessBoard;
-import java.awt.Dimension;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -30,7 +29,6 @@ public class MainUI extends JFrame
     public MainUI()
     {
         initComponents();
-
     }
 
     /**
