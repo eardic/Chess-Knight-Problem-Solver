@@ -3,10 +3,27 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gyte.ai.eardic.chessknight;
+package gyte.ai.eardic.chessknight.gui;
 
+import aima.core.agent.Action;
+import aima.core.environment.eightpuzzle.EightPuzzleFunctionFactory;
+import aima.core.environment.eightpuzzle.EightPuzzleGoalTest;
+import aima.core.environment.eightpuzzle.MisplacedTilleHeuristicFunction;
+import aima.core.search.framework.GraphSearch;
+import aima.core.search.framework.Problem;
+import aima.core.search.framework.Search;
+import aima.core.search.framework.SearchAgent;
+import aima.core.search.informed.AStarSearch;
 import aima.gui.demo.search.EightPuzzleDemo;
+import gyte.ai.eardic.chessknight.ai.CKPAStarSearch;
+import gyte.ai.eardic.chessknight.ai.CKPCastleHeuristic;
+import gyte.ai.eardic.chessknight.ai.CKPFunctionFactory;
+import gyte.ai.eardic.chessknight.ai.CKPGoalTest;
+import gyte.ai.eardic.chessknight.ai.CKPZeroHeuristic;
 import gyte.ai.eardic.chessknight.board.ChessBoard;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -23,12 +40,15 @@ public class MainUI extends JFrame
 
     private static final long serialVersionUID = 1L;
 
+    private ChessBoard chessBoard = null;
+
     /**
      * Creates new form MainUI
      */
     public MainUI()
     {
         initComponents();
+        //EightPuzzleDemo.main(null);
     }
 
     /**
@@ -58,14 +78,22 @@ public class MainUI extends JFrame
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        h1Result = new javax.swing.JLabel();
-        h2Result = new javax.swing.JLabel();
-        h3Result = new javax.swing.JLabel();
+        h1Ne = new javax.swing.JLabel();
+        h2Ne = new javax.swing.JLabel();
+        h3Ne = new javax.swing.JLabel();
+        h1Bf = new javax.swing.JLabel();
+        h2Bf = new javax.swing.JLabel();
+        h3Bf = new javax.swing.JLabel();
+        h1Pc = new javax.swing.JLabel();
+        h2Pc = new javax.swing.JLabel();
+        h3Pc = new javax.swing.JLabel();
         startButton = new javax.swing.JButton();
+        progressBar = new javax.swing.JProgressBar();
         boardPanel = new javax.swing.JLayeredPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Chess Knight Problem Solver");
+        setMinimumSize(new java.awt.Dimension(720, 450));
         addComponentListener(new java.awt.event.ComponentAdapter()
         {
             public void componentResized(java.awt.event.ComponentEvent evt)
@@ -99,7 +127,7 @@ public class MainUI extends JFrame
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(buildBoardButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+            .addComponent(buildBoardButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -139,11 +167,11 @@ public class MainUI extends JFrame
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Heuristics"));
         jPanel2.setToolTipText("Select one of three heuristics to solve CNP");
 
-        h1CheckBox.setText("H1");
+        h1CheckBox.setText("Zero Heuristic");
 
-        h2CheckBox.setText("H2");
+        h2CheckBox.setText("Castle Heuristic");
 
-        h3CheckBox.setText("H3");
+        h3CheckBox.setText("Queen Heuristic");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -159,28 +187,39 @@ public class MainUI extends JFrame
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(h1CheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(h2CheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(h3CheckBox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(h3CheckBox))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Node Expansions"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("P.Cost & N.Expa & B.Fac"));
 
-        jLabel3.setText("H1");
+        jLabel3.setText("ZH");
 
-        jLabel4.setText("H2");
+        jLabel4.setText("CH");
 
-        jLabel5.setText("H3");
+        jLabel5.setText("QH");
 
-        h1Result.setText("0");
+        h1Ne.setText("0");
 
-        h2Result.setText("0");
+        h2Ne.setText("0");
 
-        h3Result.setText("0");
+        h3Ne.setText("0");
+
+        h1Bf.setText("0");
+
+        h2Bf.setText("0");
+
+        h3Bf.setText("0");
+
+        h1Pc.setText("0");
+
+        h2Pc.setText("0");
+
+        h3Pc.setText("0");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -189,17 +228,33 @@ public class MainUI extends JFrame
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(h3Result))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(h1Result))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(h3Pc))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(h2Pc))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(h1Pc)))
+                        .addGap(29, 29, 29)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(h1Ne, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(h2Ne, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(h3Ne, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(9, 9, 9)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(h1Bf))
+                            .addComponent(h3Bf, javax.swing.GroupLayout.Alignment.TRAILING)))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(h2Result)))
+                        .addComponent(h2Bf)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -208,19 +263,33 @@ public class MainUI extends JFrame
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(h1Result))
+                    .addComponent(h1Ne)
+                    .addComponent(h1Bf)
+                    .addComponent(h1Pc))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(h2Result))
+                    .addComponent(h2Ne)
+                    .addComponent(h2Bf)
+                    .addComponent(h2Pc))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(h3Result)))
+                    .addComponent(h3Ne)
+                    .addComponent(h3Bf)
+                    .addComponent(h3Pc)))
         );
 
         startButton.setText("Start Solving");
         startButton.setToolTipText("Solves Chess Knight Problem using selected heuristics respectively.");
+        startButton.setEnabled(false);
+        startButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                startButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout controlPanelLayout = new javax.swing.GroupLayout(controlPanel);
         controlPanel.setLayout(controlPanelLayout);
@@ -229,12 +298,14 @@ public class MainUI extends JFrame
             .addGroup(controlPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(startButton))
-                .addContainerGap(15, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(controlPanelLayout.createSequentialGroup()
+                        .addComponent(startButton)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addContainerGap())
         );
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -245,18 +316,21 @@ public class MainUI extends JFrame
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(startButton)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        boardPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         boardPanel.setToolTipText("Use Chess Board Panel to create the board.");
 
         javax.swing.GroupLayout boardPanelLayout = new javax.swing.GroupLayout(boardPanel);
         boardPanel.setLayout(boardPanelLayout);
         boardPanelLayout.setHorizontalGroup(
             boardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 514, Short.MAX_VALUE)
+            .addGap(0, 508, Short.MAX_VALUE)
         );
         boardPanelLayout.setVerticalGroup(
             boardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -270,17 +344,17 @@ public class MainUI extends JFrame
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(controlPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(boardPanel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(boardPanel)
-                    .addComponent(controlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(controlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(boardPanel))
                 .addContainerGap())
         );
 
@@ -307,13 +381,23 @@ public class MainUI extends JFrame
                 throw new NumberFormatException();
             }
             
+            System.out.println("ChessBoard inputs are valid.Creating board...");
+            
             // Create board
-            ChessBoard board = new ChessBoard(inputRow, inputCol, boardPanel.getSize());
+            chessBoard = new ChessBoard(inputRow, inputCol, boardPanel.getSize());
             //Random barriers
-            board.addBarrierRandomly(barrierRate);
+            chessBoard.addBarrierRandomly(barrierRate);
+            
+            System.out.println("ChessBoard's been created and being added to gui...");
+            
             // Add the board to gui
             boardPanel.removeAll();
-            boardPanel.add(board);
+            boardPanel.add(chessBoard);
+            
+            // Enable solve button
+            startButton.setEnabled(true);
+            
+            System.out.println("ChessBoard's been added to gui.Done.");
         }
         catch (NumberFormatException ex)
         {
@@ -332,6 +416,25 @@ public class MainUI extends JFrame
         }
     }//GEN-LAST:event_formComponentResized
 
+    private void startButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_startButtonActionPerformed
+    {//GEN-HEADEREND:event_startButtonActionPerformed
+        // TODO add your handling code here:
+        if(h1CheckBox.isSelected())
+        {
+            CKPAStarSearch.solveByZeroMethod(chessBoard);
+        }
+        if(h2CheckBox.isSelected())
+        {
+            CKPAStarSearch.solveByCastleMethod(chessBoard);
+        }
+        if(h3CheckBox.isSelected())
+        {
+            CKPAStarSearch.solveByQueenMethod(chessBoard);
+        }
+    }//GEN-LAST:event_startButtonActionPerformed
+    
+  
+
     /**
      * @param args the command line arguments
      */
@@ -342,19 +445,7 @@ public class MainUI extends JFrame
             /* Set the Metal look and feel */
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        catch (ClassNotFoundException ex)
-        {
-            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (InstantiationException ex)
-        {
-            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IllegalAccessException ex)
-        {
-            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (UnsupportedLookAndFeelException ex)
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex)
         {
             Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -376,12 +467,18 @@ public class MainUI extends JFrame
     private javax.swing.JButton buildBoardButton;
     private javax.swing.JTextField columnField;
     private javax.swing.JPanel controlPanel;
+    private javax.swing.JLabel h1Bf;
     private javax.swing.JCheckBox h1CheckBox;
-    private javax.swing.JLabel h1Result;
+    private javax.swing.JLabel h1Ne;
+    private javax.swing.JLabel h1Pc;
+    private javax.swing.JLabel h2Bf;
     private javax.swing.JCheckBox h2CheckBox;
-    private javax.swing.JLabel h2Result;
+    private javax.swing.JLabel h2Ne;
+    private javax.swing.JLabel h2Pc;
+    private javax.swing.JLabel h3Bf;
     private javax.swing.JCheckBox h3CheckBox;
-    private javax.swing.JLabel h3Result;
+    private javax.swing.JLabel h3Ne;
+    private javax.swing.JLabel h3Pc;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -391,6 +488,7 @@ public class MainUI extends JFrame
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JProgressBar progressBar;
     private javax.swing.JTextField rowField;
     private javax.swing.JButton startButton;
     // End of variables declaration//GEN-END:variables

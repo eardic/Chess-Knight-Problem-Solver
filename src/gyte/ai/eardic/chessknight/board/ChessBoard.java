@@ -5,10 +5,13 @@
  */
 package gyte.ai.eardic.chessknight.board;
 
+import aima.core.agent.Action;
+import gyte.ai.eardic.chessknight.knight.Knight;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.util.Map;
 import java.util.Random;
 import javax.swing.JPanel;
 
@@ -20,15 +23,14 @@ public class ChessBoard extends JPanel
 {
 
     private static final long serialVersionUID = 1L;
-    private static final int MIN_BOARD_SIZE = 3;
-    private static final Color BARRIER_COLOR = Color.RED;
+    private static final Color BARRIER_COLOR = Color.orange;
 
     private int row, column; // row x column square board
     private Square[][] squares;
+    private Knight knight;
 
     /**
-     * Initializes board using given row and column size Board size has to be
-     * larger than 3x3 Otherwise size is set to 3x3
+     * Initializes board using given row and column size
      *
      * @param row
      * @param column
@@ -37,14 +39,40 @@ public class ChessBoard extends JPanel
     public ChessBoard(int row, int column, Dimension dim)
     {
         super();
-        if (row >= MIN_BOARD_SIZE && column >= MIN_BOARD_SIZE)
+        initBoard(row, column, dim);
+        // Init Knight
+        knight = new Knight(new Point(row - 1, column - 1));
+        squares[0][0].add(knight);
+    }
+
+    public ChessBoard(ChessBoard board)
+    {
+        copyBoard(board);
+    }
+    
+    private void copyBoard(ChessBoard board)
+    {
+        this.row = board.getRow();
+        this.column = board.getColumn();
+
+        setLayout(new GridLayout(row, column));
+        setPreferredSize(board.getSize());
+        setSize(board.getSize());
+        setBounds(0, 0, board.getSize().width, board.getSize().height);
+
+        squares = new Square[row][column];
+        for (int i = 0; i < row; ++i)
         {
-            initBoard(row, column, dim);
+            for (int j = 0; j < column; ++j)
+            {
+                squares[i][j] = new Square(new Point(i, j), board.getSquare(i, j).getColor());
+                add(squares[i][j]);
+            }
         }
-        else
-        {
-            initBoard(MIN_BOARD_SIZE, MIN_BOARD_SIZE, dim);
-        }
+        knight = new Knight(board.getKnight().getGoalPosition());
+        knight.setPosition(board.getKnight().getPosition());        
+        squares[knight.getPosition().x][knight.getPosition().y].add(knight);
+        
     }
 
     private void initBoard(int row, int column, Dimension size)
@@ -62,15 +90,30 @@ public class ChessBoard extends JPanel
             for (int j = 0; j < column; ++j)
             {
                 squares[i][j] = new Square(new Point(i, j),
-                        ((i + j) % 2 == 0) ? Color.DARK_GRAY : Color.WHITE);
+                        ((i + j) % 2 == 0) ? Color.GRAY : Color.WHITE);
                 add(squares[i][j]);
             }
         }
     }
 
+    public Knight getKnight()
+    {
+        return knight;
+    }
+
+    public void setKnight(Knight knight)
+    {
+        this.knight = knight;
+    }
+
     public Square getSquare(Point p)
     {
         return squares[p.x][p.y];
+    }
+
+    public Square getSquare(int x, int y)
+    {
+        return squares[x][y];
     }
 
     public int getRow()
@@ -90,7 +133,12 @@ public class ChessBoard extends JPanel
 
     public boolean isBarrier(Point p)
     {
-        return squares[p.x][p.y].getBackground() == BARRIER_COLOR;
+        return squares[p.x][p.y].getBackground().equals(BARRIER_COLOR);
+    }
+
+    public boolean inBoard(Point p)
+    {
+        return (p.x < row && p.x >= 0) && (p.y < column && p.y >= 0);
     }
 
     /**
@@ -112,6 +160,34 @@ public class ChessBoard extends JPanel
                 addBarrier(p);
             }
         }
+    }
+
+    public boolean canMoveKnight(Action a)
+    {
+        Point[] path = knight.getPath(a);
+        for (Point p : path)
+        {
+            if (!inBoard(p) || isBarrier(p))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void moveKnight(Action a)
+    {
+        //Remove knight from old square
+        int x = knight.getPosition().x;
+        int y = knight.getPosition().y;
+        squares[x][y].remove(knight);
+
+        // Go to new square
+        Point newPos = knight.goNewPosition(a);
+        squares[newPos.x][newPos.y].add(knight);
+
+        // Update squares
+        this.repaint();
     }
 
 }

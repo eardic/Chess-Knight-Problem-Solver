@@ -6,11 +6,24 @@
 
 package gyte.ai.eardic.chessknight.ai;
 
+import aima.core.search.framework.HeuristicFunction;
+import gyte.ai.eardic.chessknight.board.ChessBoard;
+import java.awt.Point;
+
 /**
  *
  * @author Emre
  */
-public class CKPCastleHeuristic
+public class CKPCastleHeuristic implements HeuristicFunction
 {
+
+    @Override
+    public double h(Object o)
+    {
+        ChessBoard b = (ChessBoard)o;
+        Point pos = b.getKnight().getPosition();
+        Point goalPos = b.getKnight().getGoalPosition();
+        return Math.abs(pos.x-goalPos.x) + Math.abs(pos.y-goalPos.y);
+    }
     
 }

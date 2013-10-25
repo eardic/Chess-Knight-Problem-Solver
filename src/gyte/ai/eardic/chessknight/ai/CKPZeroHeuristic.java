@@ -6,11 +6,19 @@
 
 package gyte.ai.eardic.chessknight.ai;
 
+import aima.core.search.framework.HeuristicFunction;
+
 /**
  *
  * @author Emre
  */
-public class CKPZeroHeuristic
+public class CKPZeroHeuristic  implements HeuristicFunction
 {
+
+    @Override
+    public double h(Object o)
+    {
+        return 0;
+    }
     
 }
