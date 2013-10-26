@@ -20,6 +20,7 @@ import gyte.ai.eardic.chessknight.ai.CKPCastleHeuristic;
 import gyte.ai.eardic.chessknight.ai.CKPFunctionFactory;
 import gyte.ai.eardic.chessknight.ai.CKPGoalTest;
 import gyte.ai.eardic.chessknight.ai.CKPZeroHeuristic;
+import gyte.ai.eardic.chessknight.ai.SearchResult;
 import gyte.ai.eardic.chessknight.board.ChessBoard;
 import java.util.Iterator;
 import java.util.List;
@@ -127,7 +128,7 @@ public class MainUI extends JFrame
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(buildBoardButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+            .addComponent(buildBoardButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -298,13 +299,13 @@ public class MainUI extends JFrame
             .addGroup(controlPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(controlPanelLayout.createSequentialGroup()
                         .addComponent(startButton)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         controlPanelLayout.setVerticalGroup(
@@ -344,7 +345,7 @@ public class MainUI extends JFrame
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(controlPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(boardPanel)
                 .addContainerGap())
         );
@@ -380,23 +381,23 @@ public class MainUI extends JFrame
             {
                 throw new NumberFormatException();
             }
-            
+
             System.out.println("ChessBoard inputs are valid.Creating board...");
-            
+
             // Create board
             chessBoard = new ChessBoard(inputRow, inputCol, boardPanel.getSize());
             //Random barriers
             chessBoard.addBarrierRandomly(barrierRate);
-            
+
             System.out.println("ChessBoard's been created and being added to gui...");
-            
+
             // Add the board to gui
             boardPanel.removeAll();
             boardPanel.add(chessBoard);
-            
+
             // Enable solve button
             startButton.setEnabled(true);
-            
+
             System.out.println("ChessBoard's been added to gui.Done.");
         }
         catch (NumberFormatException ex)
@@ -418,22 +419,36 @@ public class MainUI extends JFrame
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_startButtonActionPerformed
     {//GEN-HEADEREND:event_startButtonActionPerformed
-        // TODO add your handling code here:
-        if(h1CheckBox.isSelected())
+        // TODO add your handling code here:        
+        if (h1CheckBox.isSelected())
         {
-            CKPAStarSearch.solveByZeroMethod(chessBoard);
+            SearchResult res;
+            SearchAgent ag = CKPAStarSearch.solveByZeroMethod(chessBoard);
+            res = CKPAStarSearch.getResults(ag);
+            h1Pc.setText(res.getPathCost() + "");
+            h1Bf.setText(res.getBrachingFactor() + "");
+            h1Ne.setText(res.getExpandedNode() + "");
         }
-        if(h2CheckBox.isSelected())
+        if (h2CheckBox.isSelected())
         {
-            CKPAStarSearch.solveByCastleMethod(chessBoard);
+            SearchResult res;
+            SearchAgent ag = CKPAStarSearch.solveByCastleMethod(chessBoard);
+            res = CKPAStarSearch.getResults(ag);
+            h2Pc.setText(res.getPathCost() + "");
+            h2Bf.setText(res.getBrachingFactor() + "");
+            h2Ne.setText(res.getExpandedNode() + "");
         }
-        if(h3CheckBox.isSelected())
+        if (h3CheckBox.isSelected())
         {
-            CKPAStarSearch.solveByQueenMethod(chessBoard);
+            SearchResult res;
+            SearchAgent ag = CKPAStarSearch.solveByQueenMethod(chessBoard);
+            res = CKPAStarSearch.getResults(ag);
+            h3Pc.setText(res.getPathCost() + "");
+            h3Bf.setText(res.getBrachingFactor() + "");
+            h3Ne.setText(res.getExpandedNode() + "");
         }
     }//GEN-LAST:event_startButtonActionPerformed
-    
-  
+
 
     /**
      * @param args the command line arguments
