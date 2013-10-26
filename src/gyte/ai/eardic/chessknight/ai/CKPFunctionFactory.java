@@ -47,7 +47,7 @@ public class CKPFunctionFactory
         public Set<Action> actions(Object o)
         {
             ChessBoard b = (ChessBoard) o;
-            Set<Action> actions = new LinkedHashSet<>();
+            Set<Action> actions = new LinkedHashSet<Action>();
 
             if (b.canMoveKnight(Knight.LeftUp))
             {

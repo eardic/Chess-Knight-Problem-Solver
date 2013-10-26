@@ -18,12 +18,8 @@ public class CKPGoalTest implements GoalTest
     @Override
     public boolean isGoalState(Object o)
     {
-        if (o instanceof ChessBoard)
-        {
-            ChessBoard b = (ChessBoard) o;
-            return b.getKnight().isReachedGoal();
-        }        
-        return false;
+        ChessBoard b = (ChessBoard) o;
+        return b.getKnight().isReachedGoal();
     }
 
 }

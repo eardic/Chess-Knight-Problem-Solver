@@ -11,7 +11,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
-import java.util.Map;
 import java.util.Random;
 import javax.swing.JPanel;
 
@@ -21,10 +20,7 @@ import javax.swing.JPanel;
  */
 public class ChessBoard extends JPanel
 {
-
     private static final long serialVersionUID = 1L;
-    private static final Color BARRIER_COLOR = Color.orange;
-
     private int row, column; // row x column square board
     private Square[][] squares;
     private Knight knight;
@@ -36,10 +32,10 @@ public class ChessBoard extends JPanel
      * @param column
      * @param dim
      */
-    public ChessBoard(int row, int column, Dimension dim)
+    public ChessBoard(int row, int column, Dimension dim, int barPer)
     {
         super();
-        initBoard(row, column, dim);
+        initBoard(row, column, dim, barPer);
         // Init Knight
         knight = new Knight(new Point(row - 1, column - 1));
         squares[0][0].add(knight);
@@ -52,30 +48,20 @@ public class ChessBoard extends JPanel
     
     private void copyBoard(ChessBoard board)
     {
+        // Shallow copy of board
         this.row = board.getRow();
         this.column = board.getColumn();
-
         setLayout(new GridLayout(row, column));
         setPreferredSize(board.getSize());
         setSize(board.getSize());
-        setBounds(0, 0, board.getSize().width, board.getSize().height);
-
-        squares = new Square[row][column];
-        for (int i = 0; i < row; ++i)
-        {
-            for (int j = 0; j < column; ++j)
-            {
-                squares[i][j] = new Square(new Point(i, j), board.getSquare(i, j).getColor());
-                add(squares[i][j]);
-            }
-        }
-        knight = new Knight(board.getKnight().getGoalPosition());
-        knight.setPosition(board.getKnight().getPosition());        
-        squares[knight.getPosition().x][knight.getPosition().y].add(knight);
+        setBounds(0, 0, board.getSize().width, board.getSize().height);        
+        this.squares = board.getSquares();
         
+        // Deep copy - New Knight
+        knight = new Knight(board.getKnight());       
     }
 
-    private void initBoard(int row, int column, Dimension size)
+    private void initBoard(int row, int column, Dimension size, int per)
     {
         this.row = row;
         this.column = column;
@@ -94,6 +80,13 @@ public class ChessBoard extends JPanel
                 add(squares[i][j]);
             }
         }
+        
+        addBarrierRandomly(per);
+    }
+    
+    public Square[][] getSquares()
+    {
+        return squares;
     }
 
     public Knight getKnight()
@@ -128,12 +121,12 @@ public class ChessBoard extends JPanel
 
     public void addBarrier(Point p)
     {
-        squares[p.x][p.y].setBackground(BARRIER_COLOR);
+        squares[p.x][p.y].setBlock(true);
     }
 
     public boolean isBarrier(Point p)
     {
-        return squares[p.x][p.y].getBackground().equals(BARRIER_COLOR);
+        return squares[p.x][p.y].isBlock();
     }
 
     public boolean inBoard(Point p)

@@ -35,14 +35,14 @@ public class CKPAStarSearch
         return solve(chessBoard, new CKPCastleHeuristic());
     }
 
-    public static SearchAgent solveByQueenMethod(ChessBoard chessBoard)
-    {
-        return solve(chessBoard, new CKPQueenHeuristic());
-    }
-
     public static SearchAgent solveByZeroMethod(ChessBoard chessBoard)
     {
         return solve(chessBoard, new CKPZeroHeuristic());
+    }
+
+    public static SearchAgent solveByKingMethod(ChessBoard chessBoard)
+    {
+        return solve(chessBoard, new CKPKingHeuristic());
     }
 
     private static SearchAgent solve(ChessBoard chessBoard, HeuristicFunction heuristic)
@@ -51,7 +51,7 @@ public class CKPAStarSearch
         {
             Problem problem = new Problem(chessBoard, CKPFunctionFactory
                     .getActionsFunction(), CKPFunctionFactory
-                    .getResultFunction(), new CKPGoalTest());
+                    .getResultFunction(), new CKPGoalTest(), new CKPStepCostFunction());
             Search search = new AStarSearch(new GraphSearch(), heuristic);
             SearchAgent agent = new SearchAgent(problem, search);
             printActions(agent.getActions());

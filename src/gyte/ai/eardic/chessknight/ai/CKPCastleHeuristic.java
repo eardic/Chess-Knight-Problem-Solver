@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package gyte.ai.eardic.chessknight.ai;
 
 import aima.core.search.framework.HeuristicFunction;
@@ -20,10 +19,22 @@ public class CKPCastleHeuristic implements HeuristicFunction
     @Override
     public double h(Object o)
     {
-        ChessBoard b = (ChessBoard)o;
+        ChessBoard b = (ChessBoard) o;
         Point pos = b.getKnight().getPosition();
         Point goalPos = b.getKnight().getGoalPosition();
-        return Math.abs(pos.x-goalPos.x) + Math.abs(pos.y-goalPos.y);
+
+        int move = 0;
+        if (Math.abs(pos.x - goalPos.x) > 0)
+        {
+            ++move;
+        }
+        
+        if (Math.abs(pos.y - goalPos.y) > 0)
+        {
+            ++move;
+        }
+
+        return move;
     }
-    
+
 }

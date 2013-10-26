@@ -33,7 +33,9 @@ public class Knight extends JLabel
     private static final long serialVersionUID = 1L;
     private Point position;
     private final Point goalPosition;
-
+    
+    private Point[] path = new Point[3];
+    
     public Knight(Point goal)
     {
         ImageIcon img = new ImageIcon(getClass().getResource("../knight/resource/knight.png"));        
@@ -42,6 +44,15 @@ public class Knight extends JLabel
         this.setHorizontalAlignment(JLabel.CENTER);
         this.position = new Point(0, 0);
         this.goalPosition = goal;
+    }
+    
+    public Knight(Knight k)
+    {             
+        this.setIcon(k.getIcon());
+        this.setVerticalAlignment(JLabel.CENTER);
+        this.setHorizontalAlignment(JLabel.CENTER);
+        this.position = new Point(k.getPosition());
+        this.goalPosition = k.getGoalPosition();
     }
 
     public Point getGoalPosition()
@@ -67,7 +78,7 @@ public class Knight extends JLabel
     public Point getNewPosition(Action a)
     {
         Point[] path = getPath(a);
-        return path[2];
+        return path[path.length-1];
     }
     
     public Point goNewPosition(Action a)
@@ -77,9 +88,7 @@ public class Knight extends JLabel
     }
     
     public Point[] getPath(Action a)
-    {
-        Point[] path = new Point[3];
-        
+    {        
         // LEFT MOVES ###############
         if(a.equals(Knight.LeftUp))
         {
