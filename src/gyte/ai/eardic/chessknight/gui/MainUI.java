@@ -5,21 +5,15 @@
  */
 package gyte.ai.eardic.chessknight.gui;
 
-import aima.core.agent.Action;
 import aima.core.search.framework.SearchAgent;
 import gyte.ai.eardic.chessknight.ai.CKPAStarSearch;
 import gyte.ai.eardic.chessknight.ai.SearchResult;
 import gyte.ai.eardic.chessknight.board.ChessBoard;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -86,7 +80,8 @@ public class MainUI extends JFrame
         progressBar = new javax.swing.JProgressBar();
         statusBar = new javax.swing.JLabel();
         terminateButton = new javax.swing.JButton();
-        boardPanel = new javax.swing.JScrollPane();
+        scrollPanel = new javax.swing.JScrollPane();
+        boardPanel = new javax.swing.JLayeredPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Chess Knight Problem Solver");
@@ -166,12 +161,15 @@ public class MainUI extends JFrame
 
         heuristicGroup.add(h1CheckBox);
         h1CheckBox.setText("King Heuristic");
+        h1CheckBox.setToolTipText("Based on movement of the king in chess");
 
         heuristicGroup.add(h2CheckBox);
         h2CheckBox.setText("Castle-2 Heuristic");
+        h2CheckBox.setToolTipText("Based on castle in chess but using max 2 square");
 
         heuristicGroup.add(h3CheckBox);
-        h3CheckBox.setText("Zero Heuristic");
+        h3CheckBox.setText("Pawn Heuristic");
+        h3CheckBox.setToolTipText("Based on the pawn in chess but can move one square to every direction");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -204,7 +202,7 @@ public class MainUI extends JFrame
         jLabel4.setText("CH :");
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jLabel5.setText("ZH :");
+        jLabel5.setText("PH :");
 
         h1Ne.setText("0");
 
@@ -348,7 +346,6 @@ public class MainUI extends JFrame
                 .addContainerGap())
         );
 
-        boardPanel.setWheelScrollingEnabled(false);
         boardPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener()
         {
             public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
@@ -356,6 +353,19 @@ public class MainUI extends JFrame
                 boardPanelMouseWheelMoved(evt);
             }
         });
+
+        javax.swing.GroupLayout boardPanelLayout = new javax.swing.GroupLayout(boardPanel);
+        boardPanel.setLayout(boardPanelLayout);
+        boardPanelLayout.setHorizontalGroup(
+            boardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 588, Short.MAX_VALUE)
+        );
+        boardPanelLayout.setVerticalGroup(
+            boardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 481, Short.MAX_VALUE)
+        );
+
+        scrollPanel.setViewportView(boardPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -365,15 +375,15 @@ public class MainUI extends JFrame
                 .addContainerGap()
                 .addComponent(controlPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(boardPanel)
+                .addComponent(scrollPanel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(boardPanel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(scrollPanel)
                     .addComponent(controlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -386,7 +396,6 @@ public class MainUI extends JFrame
 
         new Thread(new Runnable()
         {
-            @Override
             public void run()
             {
                 try
@@ -421,6 +430,7 @@ public class MainUI extends JFrame
                     statusBar.setText("Status : Preparing Board.");
 
                     // Add the board to gui
+                    boardPanel.setPreferredSize(chessBoard.getSize());
                     boardPanel.removeAll();
                     boardPanel.add(chessBoard);
 
@@ -455,6 +465,7 @@ public class MainUI extends JFrame
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_startButtonActionPerformed
     {//GEN-HEADEREND:event_startButtonActionPerformed
+
         probSolver = new Thread(new Runnable()
         {
 
@@ -481,9 +492,9 @@ public class MainUI extends JFrame
                     }
                     if (h3CheckBox.isSelected())
                     {
-                        statusBar.setText("Status : Zero H's Running...");
+                        statusBar.setText("Status : Pawn H's Running...");
                         chessBoard.resetBoard();
-                        showSolution(h3Pc, h3Ne, h3Bf, CKPAStarSearch.solveByZeroMethod(chessBoard));
+                        showSolution(h3Pc, h3Ne, h3Bf, CKPAStarSearch.solveByPawnMethod(chessBoard));
                     }
                     statusBar.setText("Status : All Heuristics're Done!...");
                     progressBar.setValue(100);
@@ -538,8 +549,7 @@ public class MainUI extends JFrame
     private void boardPanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt)//GEN-FIRST:event_boardPanelMouseWheelMoved
     {//GEN-HEADEREND:event_boardPanelMouseWheelMoved
         // TODO add your handling code here:
-        int delta = evt.getWheelRotation();
-        if (delta > 0)
+        if (evt.getWheelRotation() > 0)
         {
             chessBoard.zoomIn();
         }
@@ -547,7 +557,8 @@ public class MainUI extends JFrame
         {
             chessBoard.zoomOut();
         }
-
+        boardPanel.setSize(chessBoard.getSize());
+        boardPanel.setPreferredSize(chessBoard.getSize());
         boardPanel.revalidate();
         boardPanel.repaint();
     }//GEN-LAST:event_boardPanelMouseWheelMoved
@@ -625,7 +636,7 @@ public class MainUI extends JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField barrierPercent;
-    private javax.swing.JScrollPane boardPanel;
+    private javax.swing.JLayeredPane boardPanel;
     private javax.swing.JButton buildBoardButton;
     private javax.swing.JTextField columnField;
     private javax.swing.JPanel controlPanel;
@@ -653,6 +664,7 @@ public class MainUI extends JFrame
     private javax.swing.JPanel jPanel3;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JTextField rowField;
+    private javax.swing.JScrollPane scrollPanel;
     private javax.swing.JButton startButton;
     private javax.swing.JLabel statusBar;
     private javax.swing.JButton terminateButton;

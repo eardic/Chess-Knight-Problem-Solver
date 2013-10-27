@@ -35,9 +35,9 @@ public class CKPAStarSearch
         return solve(chessBoard, new CKPCastleHeuristic());
     }
 
-    public static SearchAgent solveByZeroMethod(ChessBoard chessBoard)
+    public static SearchAgent solveByPawnMethod(ChessBoard chessBoard)
     {
-        return solve(chessBoard, new CKPZeroHeuristic());
+        return solve(chessBoard, new CKPPawnHeuristic());
     }
 
     public static SearchAgent solveByKingMethod(ChessBoard chessBoard)

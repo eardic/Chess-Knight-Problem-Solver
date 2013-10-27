@@ -10,7 +10,7 @@ import gyte.ai.eardic.chessknight.board.ChessBoard;
 import java.awt.Point;
 
 /**
- *
+ * The Castle-2 can move max 2 square to 4 direction
  * @author Emre
  */
 public class CKPCastleHeuristic implements HeuristicFunction

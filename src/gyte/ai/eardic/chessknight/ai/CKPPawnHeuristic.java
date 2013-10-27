@@ -10,10 +10,10 @@ import gyte.ai.eardic.chessknight.board.ChessBoard;
 import java.awt.Point;
 
 /**
- *
+ * The pawn can move one square to 4 direction
  * @author Emre
  */
-public class CKPZeroHeuristic implements HeuristicFunction
+public class CKPPawnHeuristic implements HeuristicFunction
 {
 
     @Override
@@ -23,14 +23,11 @@ public class CKPZeroHeuristic implements HeuristicFunction
         Point pos = b.getKnight().getPosition();
         Point goalPos = b.getKnight().getGoalPosition();
         
-        int cross=0;
-        cross = Math.min(Math.abs(pos.x - goalPos.x), Math.abs(pos.y - goalPos.y));
-        Point crossPos = new Point(pos.x+cross,pos.y+cross);
-        
-        int straight=0;
-        straight = Math.abs(crossPos.x - goalPos.x) + Math.abs(crossPos.y - goalPos.y);
+        int move = 0;
+        move += Math.abs(pos.x - goalPos.x);       
+        move += Math.abs(pos.y - goalPos.y);
              
-        return 0;
+        return move;
     }
 
 }

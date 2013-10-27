@@ -71,7 +71,9 @@ public class ChessBoard extends JPanel
     {
         this.row = row;
         this.column = column;
-
+        
+        size = new Dimension(column*50,row*50);
+        
         setLayout(new GridLayout(row, column));
         setPreferredSize(size);
         setSize(size);
@@ -113,16 +115,16 @@ public class ChessBoard extends JPanel
     public void zoomOut()
     {
         Dimension size = getSize();
-        size.width = (int) (size.width * 1.2);
-        size.height = (int) (size.height * 1.2);
+        size.width = (int) (size.width * 1.1);
+        size.height = (int) (size.height * 1.1);
         setSize(size);
     }
 
     public void zoomIn()
     {
         Dimension size = getSize();
-        size.width = (int) (size.width * 0.8);
-        size.height = (int) (size.height * 0.8);
+        size.width = (int) (size.width * 0.9);
+        size.height = (int) (size.height * 0.9);
         setSize(size);
     }
 
@@ -244,6 +246,7 @@ public class ChessBoard extends JPanel
             }
             k.goNewPosition(a);
         }
+        squares[row-1][column-1].add(knight);
     }
 
 }

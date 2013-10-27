@@ -11,7 +11,7 @@ import gyte.ai.eardic.chessknight.board.ChessBoard;
 import java.awt.Point;
 
 /**
- *
+ * The king can move every direction using one square
  * @author Emre
  */
 public class CKPKingHeuristic  implements HeuristicFunction
