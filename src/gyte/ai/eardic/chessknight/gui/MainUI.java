@@ -5,13 +5,19 @@
  */
 package gyte.ai.eardic.chessknight.gui;
 
+import aima.core.agent.Action;
 import aima.core.search.framework.SearchAgent;
 import gyte.ai.eardic.chessknight.ai.CKPAStarSearch;
 import gyte.ai.eardic.chessknight.ai.SearchResult;
 import gyte.ai.eardic.chessknight.board.ChessBoard;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -28,12 +34,15 @@ public class MainUI extends JFrame
 
     private ChessBoard chessBoard = null;
 
+    private Thread probSolver;
+
     /**
      * Creates new form MainUI
      */
     public MainUI()
     {
         initComponents();
+
     }
 
     /**
@@ -46,6 +55,7 @@ public class MainUI extends JFrame
     private void initComponents()
     {
 
+        heuristicGroup = new javax.swing.ButtonGroup();
         controlPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         buildBoardButton = new javax.swing.JButton();
@@ -56,9 +66,9 @@ public class MainUI extends JFrame
         jLabel6 = new javax.swing.JLabel();
         barrierPercent = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
-        h1CheckBox = new javax.swing.JCheckBox();
-        h2CheckBox = new javax.swing.JCheckBox();
-        h3CheckBox = new javax.swing.JCheckBox();
+        h1CheckBox = new javax.swing.JRadioButton();
+        h2CheckBox = new javax.swing.JRadioButton();
+        h3CheckBox = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -75,7 +85,8 @@ public class MainUI extends JFrame
         startButton = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
         statusBar = new javax.swing.JLabel();
-        boardPanel = new javax.swing.JLayeredPane();
+        terminateButton = new javax.swing.JButton();
+        boardPanel = new javax.swing.JScrollPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Chess Knight Problem Solver");
@@ -113,7 +124,7 @@ public class MainUI extends JFrame
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(buildBoardButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+            .addComponent(buildBoardButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -134,7 +145,7 @@ public class MainUI extends JFrame
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addGap(0, 7, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(rowField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -147,16 +158,19 @@ public class MainUI extends JFrame
                     .addComponent(jLabel6)
                     .addComponent(barrierPercent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buildBoardButton))
+                .addComponent(buildBoardButton, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Heuristics"));
         jPanel2.setToolTipText("Select one of three heuristics to solve CNP");
 
+        heuristicGroup.add(h1CheckBox);
         h1CheckBox.setText("King Heuristic");
 
-        h2CheckBox.setText("Castle Heuristic");
+        heuristicGroup.add(h2CheckBox);
+        h2CheckBox.setText("Castle-2 Heuristic");
 
+        heuristicGroup.add(h3CheckBox);
         h3CheckBox.setText("Zero Heuristic");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -177,17 +191,20 @@ public class MainUI extends JFrame
                 .addComponent(h1CheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(h2CheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(3, 3, 3)
                 .addComponent(h3CheckBox))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("P.Cost & N.Expa & B.Fac"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("P.Cost & N.Expa & B.Factor"));
 
-        jLabel3.setText("KH");
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel3.setText("KH :");
 
-        jLabel4.setText("CH");
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel4.setText("CH :");
 
-        jLabel5.setText("ZH");
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel5.setText("ZH :");
 
         h1Ne.setText("0");
 
@@ -195,11 +212,11 @@ public class MainUI extends JFrame
 
         h3Ne.setText("0");
 
-        h1Bf.setText("0");
+        h1Bf.setText("0,000");
 
-        h2Bf.setText("0");
+        h2Bf.setText("0,000");
 
-        h3Bf.setText("0");
+        h3Bf.setText("0,000");
 
         h1Pc.setText("0");
 
@@ -217,7 +234,7 @@ public class MainUI extends JFrame
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
                                 .addComponent(h3Pc))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -266,6 +283,7 @@ public class MainUI extends JFrame
                     .addComponent(h3Pc)))
         );
 
+        startButton.setBackground(new java.awt.Color(41, 198, 60));
         startButton.setText("Start Solving");
         startButton.setToolTipText("Solves Chess Knight Problem using selected heuristics respectively.");
         startButton.setEnabled(false);
@@ -281,6 +299,17 @@ public class MainUI extends JFrame
 
         statusBar.setText("Status :");
 
+        terminateButton.setBackground(new java.awt.Color(255, 51, 51));
+        terminateButton.setText("Terminate");
+        terminateButton.setEnabled(false);
+        terminateButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                terminateButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout controlPanelLayout = new javax.swing.GroupLayout(controlPanel);
         controlPanel.setLayout(controlPanelLayout);
         controlPanelLayout.setHorizontalGroup(
@@ -291,20 +320,20 @@ public class MainUI extends JFrame
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(startButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(controlPanelLayout.createSequentialGroup()
-                        .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(statusBar)
-                            .addComponent(startButton))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(statusBar)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(terminateButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(controlPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13)
+                .addGap(4, 4, 4)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -312,24 +341,21 @@ public class MainUI extends JFrame
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusBar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(startButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(terminateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
-        boardPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        boardPanel.setToolTipText("Use Chess Board Panel to create the board.");
-
-        javax.swing.GroupLayout boardPanelLayout = new javax.swing.GroupLayout(boardPanel);
-        boardPanel.setLayout(boardPanelLayout);
-        boardPanelLayout.setHorizontalGroup(
-            boardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 508, Short.MAX_VALUE)
-        );
-        boardPanelLayout.setVerticalGroup(
-            boardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
+        boardPanel.setWheelScrollingEnabled(false);
+        boardPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener()
+        {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+            {
+                boardPanelMouseWheelMoved(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -347,8 +373,8 @@ public class MainUI extends JFrame
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(controlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(boardPanel))
+                    .addComponent(boardPanel)
+                    .addComponent(controlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -357,16 +383,17 @@ public class MainUI extends JFrame
 
     private void buildBoardButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_buildBoardButtonActionPerformed
     {//GEN-HEADEREND:event_buildBoardButtonActionPerformed
-        try
+
+        new Thread(new Runnable()
         {
-            new Thread(new Runnable()
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                try
                 {
                     progressBar.setValue(0);
                     // Solve - Build button's disabled.
-                    enableButtons(false, false);
+                    enableButtons(false, false, false);
 
                     int inputRow, inputCol;
                     int barrierRate;
@@ -398,85 +425,160 @@ public class MainUI extends JFrame
                     boardPanel.add(chessBoard);
 
                     // Solve - Build button's enabled.
-                    enableButtons(true, true);
+                    enableButtons(true, true, false);
 
                     progressBar.setValue(100);
                     statusBar.setText("Status : Board's Done.");
+
                 }
-            }).start();
-        }
-        catch (NumberFormatException ex)
-        {
-            JOptionPane.showMessageDialog(this,
-                    "Row and Column cannot be negative and Barrier percent should be between 0 and 100.",
-                    "Input Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+                catch (NumberFormatException ex)
+                {
+                    enableButtons(true, true, false);
+                    progressBar.setValue(0);
+                    statusBar.setText("Status : Check board inputs !");
+                    errorDialog("Row and Column cannot be negative and Barrier percent "
+                            + "should be between 0 and 100.", "Input Error");
+                    ex.printStackTrace();
+                }
+            }
+        }).start();
+
     }//GEN-LAST:event_buildBoardButtonActionPerformed
 
     private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
     {//GEN-HEADEREND:event_formComponentResized
-        if (boardPanel.getComponentCount() != 0)
+        if (chessBoard != null)
         {
-            boardPanel.getComponent(0).setSize(boardPanel.getSize());
+            chessBoard.setSize(boardPanel.getSize());
         }
     }//GEN-LAST:event_formComponentResized
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_startButtonActionPerformed
     {//GEN-HEADEREND:event_startButtonActionPerformed
-        new Thread(new Runnable()
+        probSolver = new Thread(new Runnable()
         {
+
             @Override
             public void run()
             {
-                progressBar.setValue(0);
-                // Solve - Build button's disabled.
-                enableButtons(false, false);
-
-                if (h1CheckBox.isSelected())
+                try
                 {
-                    statusBar.setText("Status : King H's Running...");
-                    SearchResult res;
-                    SearchAgent ag = CKPAStarSearch.solveByKingMethod(chessBoard);
-                    res = CKPAStarSearch.getResults(ag);
-                    h1Pc.setText(res.getPathCost() + "");
-                    h1Bf.setText(String.format("%.2f", res.getBrachingFactor()));
-                    h1Ne.setText(res.getExpandedNode() + "");
-                }
-                if (h2CheckBox.isSelected())
-                {
-                    statusBar.setText("Status : Castle H's Running...");
-                    SearchResult res;
-                    SearchAgent ag = CKPAStarSearch.solveByCastleMethod(chessBoard);
-                    res = CKPAStarSearch.getResults(ag);
-                    h2Pc.setText(res.getPathCost() + "");
-                    h2Bf.setText(String.format("%.2f", res.getBrachingFactor()));
-                    h2Ne.setText(res.getExpandedNode() + "");
-                }
-                if (h3CheckBox.isSelected())
-                {
-                    statusBar.setText("Status : Zero H's Running...");
-                    SearchResult res;
-                    SearchAgent ag = CKPAStarSearch.solveByZeroMethod(chessBoard);
-                    res = CKPAStarSearch.getResults(ag);
-                    h3Pc.setText(res.getPathCost() + "");
-                    h3Bf.setText(String.format("%.2f", res.getBrachingFactor()));
-                    h3Ne.setText(res.getExpandedNode() + "");
-                }
-                statusBar.setText("Status : All Heuristics're Done!...");
-                progressBar.setValue(100);
+                    progressBar.setValue(0);
+                    // Solve - Build button's disabled.
+                    enableButtons(false, false, true);
 
-                // Solve - Build button's enabled.
-                enableButtons(true, true);
+                    if (h1CheckBox.isSelected())
+                    {
+                        statusBar.setText("Status : King H's Running...");
+                        chessBoard.resetBoard();
+                        showSolution(h1Pc, h1Ne, h1Bf, CKPAStarSearch.solveByKingMethod(chessBoard));
+                    }
+                    if (h2CheckBox.isSelected())
+                    {
+                        statusBar.setText("Status : Castle H's Running...");
+                        chessBoard.resetBoard();
+                        showSolution(h2Pc, h2Ne, h2Bf, CKPAStarSearch.solveByCastleMethod(chessBoard));
+                    }
+                    if (h3CheckBox.isSelected())
+                    {
+                        statusBar.setText("Status : Zero H's Running...");
+                        chessBoard.resetBoard();
+                        showSolution(h3Pc, h3Ne, h3Bf, CKPAStarSearch.solveByZeroMethod(chessBoard));
+                    }
+                    statusBar.setText("Status : All Heuristics're Done!...");
+                    progressBar.setValue(100);
 
+                    // Solve - Build button's enabled.
+                    enableButtons(true, true, false);
+
+                }
+                catch (OutOfMemoryError e)
+                {
+                    enableButtons(true, true, false);
+                    progressBar.setValue(0);
+                    statusBar.setText("Status : Not enough memory !");
+                    errorDialog("Insufficient Memory !", "OutOfMemory");
+                    e.printStackTrace();
+                }
+                catch (Exception e)
+                {
+                    enableButtons(true, true, false);
+                    progressBar.setValue(0);
+                    statusBar.setText("Status : Search canceled !");
+                    e.printStackTrace();
+                }
             }
-        }).start();
+        });
+        //START the solver thread
+        probSolver.start();
     }//GEN-LAST:event_startButtonActionPerformed
 
-    private void enableButtons(final boolean solve, final boolean build)
+    private void terminateButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_terminateButtonActionPerformed
+    {//GEN-HEADEREND:event_terminateButtonActionPerformed
+        // TODO add your handling code here:
+        try
+        {
+            if (probSolver != null)
+            {
+                probSolver.interrupt();
+                probSolver.stop();
+                chessBoard.resetBoard();
+                enableButtons(true, true, false);
+                statusBar.setText("Status : Termination's success !");
+            }
+        }
+        catch (Exception e)
+        {
+            statusBar.setText("Status : Failed to terminate !");
+            chessBoard.resetBoard();
+            enableButtons(true, true, false);
+        }
+    }//GEN-LAST:event_terminateButtonActionPerformed
+
+    private void boardPanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt)//GEN-FIRST:event_boardPanelMouseWheelMoved
+    {//GEN-HEADEREND:event_boardPanelMouseWheelMoved
+        // TODO add your handling code here:
+        int delta = evt.getWheelRotation();
+        if (delta > 0)
+        {
+            chessBoard.zoomIn();
+        }
+        else
+        {
+            chessBoard.zoomOut();
+        }
+
+        boardPanel.revalidate();
+        boardPanel.repaint();
+    }//GEN-LAST:event_boardPanelMouseWheelMoved
+
+    private void showSolution(JLabel pc, JLabel ne, JLabel bf, SearchAgent ag)
+    {
+        SearchResult res;
+        res = CKPAStarSearch.getResults(ag);
+
+        //Show analysis results
+        pc.setText(res.getPathCost() + "");
+        bf.setText(String.format("%.4f", res.getBrachingFactor()));
+        ne.setText(res.getExpandedNode() + "");
+
+        //Show solution path
+        chessBoard.showSolution(ag.getActions());
+    }
+
+    private void errorDialog(String message, String head)
+    {
+        JOptionPane.showMessageDialog(this,
+                message,
+                head,
+                JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void enableButtons(final boolean solve, final boolean build, final boolean ter)
     {
         startButton.setEnabled(solve);
         buildBoardButton.setEnabled(build);
+        terminateButton.setEnabled(ter);
     }
 
     /**
@@ -523,22 +625,23 @@ public class MainUI extends JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField barrierPercent;
-    private javax.swing.JLayeredPane boardPanel;
+    private javax.swing.JScrollPane boardPanel;
     private javax.swing.JButton buildBoardButton;
     private javax.swing.JTextField columnField;
     private javax.swing.JPanel controlPanel;
     private javax.swing.JLabel h1Bf;
-    private javax.swing.JCheckBox h1CheckBox;
+    private javax.swing.JRadioButton h1CheckBox;
     private javax.swing.JLabel h1Ne;
     private javax.swing.JLabel h1Pc;
     private javax.swing.JLabel h2Bf;
-    private javax.swing.JCheckBox h2CheckBox;
+    private javax.swing.JRadioButton h2CheckBox;
     private javax.swing.JLabel h2Ne;
     private javax.swing.JLabel h2Pc;
     private javax.swing.JLabel h3Bf;
-    private javax.swing.JCheckBox h3CheckBox;
+    private javax.swing.JRadioButton h3CheckBox;
     private javax.swing.JLabel h3Ne;
     private javax.swing.JLabel h3Pc;
+    private javax.swing.ButtonGroup heuristicGroup;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -552,5 +655,6 @@ public class MainUI extends JFrame
     private javax.swing.JTextField rowField;
     private javax.swing.JButton startButton;
     private javax.swing.JLabel statusBar;
+    private javax.swing.JButton terminateButton;
     // End of variables declaration//GEN-END:variables
 }

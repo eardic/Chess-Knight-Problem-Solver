@@ -24,16 +24,9 @@ public class CKPCastleHeuristic implements HeuristicFunction
         Point goalPos = b.getKnight().getGoalPosition();
 
         int move = 0;
-        if (Math.abs(pos.x - goalPos.x) > 0)
-        {
-            ++move;
-        }
+        move += Math.ceil(Math.abs(pos.x - goalPos.x)/2.0);       
+        move += Math.ceil(Math.abs(pos.y - goalPos.y)/2.0);
         
-        if (Math.abs(pos.y - goalPos.y) > 0)
-        {
-            ++move;
-        }
-
         return move;
     }
 

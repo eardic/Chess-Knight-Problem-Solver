@@ -12,6 +12,8 @@ import gyte.ai.eardic.chessknight.board.ChessBoard;
 import gyte.ai.eardic.chessknight.knight.Knight;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -98,7 +100,7 @@ public class CKPFunctionFactory
             if(b.canMoveKnight(a))
             {
                 ChessBoard newBoard = new ChessBoard(b);
-                newBoard.moveKnight(a);
+                newBoard.moveKnight(a);                
                 return newBoard;
             }            
             return o;

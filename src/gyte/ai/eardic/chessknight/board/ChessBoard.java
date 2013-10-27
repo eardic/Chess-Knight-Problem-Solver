@@ -11,6 +11,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.util.List;
 import java.util.Random;
 import javax.swing.JPanel;
 
@@ -20,6 +23,7 @@ import javax.swing.JPanel;
  */
 public class ChessBoard extends JPanel
 {
+
     private static final long serialVersionUID = 1L;
     private int row, column; // row x column square board
     private Square[][] squares;
@@ -31,40 +35,43 @@ public class ChessBoard extends JPanel
      * @param row
      * @param column
      * @param dim
+     * @param barPer
      */
     public ChessBoard(int row, int column, Dimension dim, int barPer)
     {
         super();
         initBoard(row, column, dim, barPer);
         // Init Knight
-        knight = new Knight(new Point(row - 1, column - 1));
-        squares[0][0].add(knight);
+        knight = new Knight(new Point(row - 1, column - 1), new Point(0, 0));
+        squares[0][0].add(knight);        
     }
 
     public ChessBoard(ChessBoard board)
     {
-        copyBoard(board);
+        copyBoard(board);        
     }
-    
+
     private void copyBoard(ChessBoard board)
     {
         // Shallow copy of board
         this.row = board.getRow();
         this.column = board.getColumn();
+
         setLayout(new GridLayout(row, column));
         setPreferredSize(board.getSize());
         setSize(board.getSize());
-        setBounds(0, 0, board.getSize().width, board.getSize().height);        
+        setBounds(0, 0, board.getSize().width, board.getSize().height);
         this.squares = board.getSquares();
-        
+
         // Deep copy - New Knight
-        knight = new Knight(board.getKnight());       
+        knight = new Knight(board.getKnight());
     }
 
     private void initBoard(int row, int column, Dimension size, int per)
     {
         this.row = row;
         this.column = column;
+
         setLayout(new GridLayout(row, column));
         setPreferredSize(size);
         setSize(size);
@@ -80,10 +87,45 @@ public class ChessBoard extends JPanel
                 add(squares[i][j]);
             }
         }
-        
+
         addBarrierRandomly(per);
     }
-    
+
+    public void resetBoard()
+    {
+        for (int i = 0; i < row; ++i)
+        {
+            for (int j = 0; j < column; ++j)
+            {
+                if (!squares[i][j].isBlock())
+                {
+                    squares[i][j].setBackground(squares[i][j].getColor());
+                    if (!knight.getInitPosition().equals(new Point(i, j)))
+                    {
+                        squares[i][j].removeAll();
+                    }
+                }
+            }
+        }
+        this.repaint();
+    }
+
+    public void zoomOut()
+    {
+        Dimension size = getSize();
+        size.width = (int) (size.width * 1.2);
+        size.height = (int) (size.height * 1.2);
+        setSize(size);
+    }
+
+    public void zoomIn()
+    {
+        Dimension size = getSize();
+        size.width = (int) (size.width * 0.8);
+        size.height = (int) (size.height * 0.8);
+        setSize(size);
+    }
+
     public Square[][] getSquares()
     {
         return squares;
@@ -170,17 +212,38 @@ public class ChessBoard extends JPanel
 
     public void moveKnight(Action a)
     {
-        //Remove knight from old square
-        int x = knight.getPosition().x;
-        int y = knight.getPosition().y;
-        squares[x][y].remove(knight);
+        /*//Remove knight from old square
+         int x = knight.getPosition().x;
+         int y = knight.getPosition().y;
+         squares[x][y].removeAll();*/
 
         // Go to new square
         Point newPos = knight.goNewPosition(a);
-        squares[newPos.x][newPos.y].add(knight);
+        // Paint expanded squares
+        squares[newPos.x][newPos.y].setBackground(Color.red);
+    }
 
-        // Update squares
-        this.repaint();
+    public void showSolution(List<Action> actions)
+    {
+        Knight k = new Knight(knight);
+        k.goInitialPosition();
+
+        for (Action a : actions)
+        {
+            Point[] path = k.getPath(a);
+            for (Point p : path)
+            {
+                if (p.equals(path[path.length - 1]))
+                {
+                    squares[p.x][p.y].setBackground(Color.BLUE);
+                }
+                else
+                {
+                    squares[p.x][p.y].setBackground(Color.GREEN);
+                }
+            }
+            k.goNewPosition(a);
+        }
     }
 
 }

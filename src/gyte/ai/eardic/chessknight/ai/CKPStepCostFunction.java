@@ -16,7 +16,7 @@ public class CKPStepCostFunction implements StepCostFunction
 {
 
     /**
-     * Knight moves 3 square for every action
+     * Knight moves 3 square for every action, cost of a move is 1.
      *
      * @param o
      * @param action
