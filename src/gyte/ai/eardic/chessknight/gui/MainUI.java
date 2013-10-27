@@ -396,6 +396,7 @@ public class MainUI extends JFrame
 
         new Thread(new Runnable()
         {
+            @Override
             public void run()
             {
                 try
@@ -449,6 +450,13 @@ public class MainUI extends JFrame
                     errorDialog("Row and Column cannot be negative and Barrier percent "
                             + "should be between 0 and 100.", "Input Error");
                     ex.printStackTrace();
+                }
+                catch(Exception e)
+                {
+                    enableButtons(true, true, false);
+                    progressBar.setValue(0);
+                    statusBar.setText("Status : Unexpected error !");
+                    errorDialog(e.toString(),"Fatal Error");
                 }
             }
         }).start();

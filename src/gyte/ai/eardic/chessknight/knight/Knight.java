@@ -17,28 +17,30 @@ import javax.swing.JLabel;
  */
 public class Knight extends JLabel
 {
+
     // Actions of Knight
     public static Action LeftUp = new DynamicAction("LeftUp");
     public static Action LeftDown = new DynamicAction("LeftDown");
-    
+
     public static Action RightUp = new DynamicAction("RightUp");
     public static Action RightDown = new DynamicAction("RightDown");
-    
+
     public static Action UpLeft = new DynamicAction("UpLeft");
     public static Action UpRight = new DynamicAction("UpRight");
-    
+
     public static Action DownLeft = new DynamicAction("DownLeft");
     public static Action DownRight = new DynamicAction("DownRight");
-    
+
     private static final long serialVersionUID = 1L;
     private Point position;
-    private final Point goalPosition,initPosition;
-    
+    private final Point goalPosition, initPosition;
+
     private Point[] path = new Point[3];
-    
-    public Knight(Point goal,Point init)
+
+    public Knight(Point goal, Point init)
     {
-        ImageIcon img = new ImageIcon(getClass().getResource("../knight/resource/knight.png"));        
+        ImageIcon img = new ImageIcon(getClass().getClassLoader().getResource(
+                "gyte/ai/eardic/chessknight/knight/resource/knight.png"));
         this.setIcon(img);
         this.setVerticalAlignment(JLabel.CENTER);
         this.setHorizontalAlignment(JLabel.CENTER);
@@ -46,9 +48,9 @@ public class Knight extends JLabel
         this.goalPosition = goal;
         this.initPosition = init;
     }
-    
+
     public Knight(Knight k)
-    {             
+    {
         this.setIcon(k.getIcon());
         this.setVerticalAlignment(JLabel.CENTER);
         this.setHorizontalAlignment(JLabel.CENTER);
@@ -56,7 +58,7 @@ public class Knight extends JLabel
         this.goalPosition = k.getGoalPosition();
         this.initPosition = k.getInitPosition();
     }
-    
+
     public void goInitialPosition()
     {
         this.position = this.initPosition;
@@ -66,12 +68,12 @@ public class Knight extends JLabel
     {
         return goalPosition;
     }
-    
+
     public Point getInitPosition()
     {
         return initPosition;
     }
-    
+
     public Point getPosition()
     {
         return position;
@@ -81,86 +83,86 @@ public class Knight extends JLabel
     {
         this.position = position;
     }
-    
+
     public boolean isReachedGoal()
     {
         return position.equals(goalPosition);
     }
-    
+
     public Point getNewPosition(Action a)
     {
         Point[] path = getPath(a);
-        return path[path.length-1];
+        return path[path.length - 1];
     }
-    
+
     public Point goNewPosition(Action a)
     {
         position = getNewPosition(a);
         return position;
     }
-    
+
     public Point[] getPath(Action a)
-    {        
+    {
         // LEFT MOVES ###############
-        if(a.equals(Knight.LeftUp))
+        if (a.equals(Knight.LeftUp))
         {
-            path[0]=new Point(position.x,position.y-1);
-            path[1]=new Point(position.x,position.y-2);
-            path[2]=new Point(position.x-1,position.y-2);
+            path[0] = new Point(position.x, position.y - 1);
+            path[1] = new Point(position.x, position.y - 2);
+            path[2] = new Point(position.x - 1, position.y - 2);
         }
-        else if(a.equals(Knight.LeftDown))
+        else if (a.equals(Knight.LeftDown))
         {
-            path[0]=new Point(position.x,position.y-1);
-            path[1]=new Point(position.x,position.y-2);
-            path[2]=new Point(position.x+1,position.y-2);
+            path[0] = new Point(position.x, position.y - 1);
+            path[1] = new Point(position.x, position.y - 2);
+            path[2] = new Point(position.x + 1, position.y - 2);
         }
         // RIGHT MOVES ###############
-        else if(a.equals(Knight.RightUp))
+        else if (a.equals(Knight.RightUp))
         {
-            path[0]=new Point(position.x,position.y+1);
-            path[1]=new Point(position.x,position.y+2);
-            path[2]=new Point(position.x-1,position.y+2);
+            path[0] = new Point(position.x, position.y + 1);
+            path[1] = new Point(position.x, position.y + 2);
+            path[2] = new Point(position.x - 1, position.y + 2);
         }
-        else if(a.equals(Knight.RightDown))
+        else if (a.equals(Knight.RightDown))
         {
-            path[0]=new Point(position.x,position.y+1);
-            path[1]=new Point(position.x,position.y+2);
-            path[2]=new Point(position.x+1,position.y+2);
+            path[0] = new Point(position.x, position.y + 1);
+            path[1] = new Point(position.x, position.y + 2);
+            path[2] = new Point(position.x + 1, position.y + 2);
         }
         // UP MOVES ###############
-        else if(a.equals(Knight.UpRight))
+        else if (a.equals(Knight.UpRight))
         {
-            path[0]=new Point(position.x-1,position.y);
-            path[1]=new Point(position.x-2,position.y);
-            path[2]=new Point(position.x-2,position.y+1);
+            path[0] = new Point(position.x - 1, position.y);
+            path[1] = new Point(position.x - 2, position.y);
+            path[2] = new Point(position.x - 2, position.y + 1);
         }
-        else if(a.equals(Knight.UpLeft))
+        else if (a.equals(Knight.UpLeft))
         {
-            path[0]=new Point(position.x-1,position.y);
-            path[1]=new Point(position.x-2,position.y);
-            path[2]=new Point(position.x-2,position.y-1);
+            path[0] = new Point(position.x - 1, position.y);
+            path[1] = new Point(position.x - 2, position.y);
+            path[2] = new Point(position.x - 2, position.y - 1);
         }
         // DOWN MOVES ###############
-        else if(a.equals(Knight.DownRight))
+        else if (a.equals(Knight.DownRight))
         {
-            path[0]=new Point(position.x+1,position.y);
-            path[1]=new Point(position.x+2,position.y);
-            path[2]=new Point(position.x+2,position.y+1);
+            path[0] = new Point(position.x + 1, position.y);
+            path[1] = new Point(position.x + 2, position.y);
+            path[2] = new Point(position.x + 2, position.y + 1);
         }
-        else if(a.equals(Knight.DownLeft))
+        else if (a.equals(Knight.DownLeft))
         {
-            path[0]=new Point(position.x+1,position.y);
-            path[1]=new Point(position.x+2,position.y);
-            path[2]=new Point(position.x+2,position.y-1);
+            path[0] = new Point(position.x + 1, position.y);
+            path[1] = new Point(position.x + 2, position.y);
+            path[2] = new Point(position.x + 2, position.y - 1);
         }
-        
+
         return path;
     }
-    
+
     @Override
     public String toString()
     {
-        return "Knight-> Curr Pos :"+position+ "\n Goal : "+goalPosition;
+        return "Knight-> Curr Pos :" + position + "\n Goal : " + goalPosition;
     }
-    
+
 }
