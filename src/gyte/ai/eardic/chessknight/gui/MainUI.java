@@ -160,15 +160,15 @@ public class MainUI extends JFrame
         jPanel2.setToolTipText("Select one of three heuristics to solve CNP");
 
         heuristicGroup.add(h1CheckBox);
-        h1CheckBox.setText("King Heuristic");
+        h1CheckBox.setText("3-Castle Heuristic");
         h1CheckBox.setToolTipText("Based on movement of the king in chess");
 
         heuristicGroup.add(h2CheckBox);
-        h2CheckBox.setText("Castle-2 Heuristic");
+        h2CheckBox.setText("3-Queen Heuristic");
         h2CheckBox.setToolTipText("Based on castle in chess but using max 2 square");
 
         heuristicGroup.add(h3CheckBox);
-        h3CheckBox.setText("Pawn Heuristic");
+        h3CheckBox.setText("Castle Heuristic");
         h3CheckBox.setToolTipText("Based on the pawn in chess but can move one square to every direction");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -196,13 +196,13 @@ public class MainUI extends JFrame
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("P.Cost & N.Expa & B.Factor"));
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jLabel3.setText("KH :");
+        jLabel3.setText("3CH :");
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jLabel4.setText("CH :");
+        jLabel4.setText("3QH :");
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jLabel5.setText("PH :");
+        jLabel5.setText("CH :");
 
         h1Ne.setText("0");
 
@@ -425,15 +425,18 @@ public class MainUI extends JFrame
                     statusBar.setText("Status : Creating Board.");
 
                     // Create board, random barrier
-                    chessBoard = new ChessBoard(inputRow, inputCol, boardPanel.getSize(), barrierRate);
+                    chessBoard = new ChessBoard(inputRow, inputCol, barrierRate);
 
                     progressBar.setValue(50);
                     statusBar.setText("Status : Preparing Board.");
 
                     // Add the board to gui
-                    boardPanel.setPreferredSize(chessBoard.getSize());
+                    chessBoard.fitScreen(boardPanel.getSize());
+                    boardPanel.setPreferredSize(chessBoard.getSize());                    
                     boardPanel.removeAll();
                     boardPanel.add(chessBoard);
+                    boardPanel.revalidate();
+                    boardPanel.repaint();
 
                     // Solve - Build button's enabled.
                     enableButtons(true, true, false);
@@ -467,7 +470,7 @@ public class MainUI extends JFrame
     {//GEN-HEADEREND:event_formComponentResized
         if (chessBoard != null)
         {
-            chessBoard.setSize(boardPanel.getSize());
+            //chessBoard.setSize(boardPanel.getSize());
         }
     }//GEN-LAST:event_formComponentResized
 
@@ -488,21 +491,21 @@ public class MainUI extends JFrame
 
                     if (h1CheckBox.isSelected())
                     {
-                        statusBar.setText("Status : King H's Running...");
+                        statusBar.setText("Status : LCastle H's Running...");
                         chessBoard.resetBoard();
-                        showSolution(h1Pc, h1Ne, h1Bf, CKPAStarSearch.solveByKingMethod(chessBoard));
+                        showSolution(h1Pc, h1Ne, h1Bf, CKPAStarSearch.solveByLimitedCastleMethod(chessBoard));
                     }
                     if (h2CheckBox.isSelected())
                     {
-                        statusBar.setText("Status : Castle H's Running...");
+                        statusBar.setText("Status : LQueen H's Running...");
                         chessBoard.resetBoard();
-                        showSolution(h2Pc, h2Ne, h2Bf, CKPAStarSearch.solveByCastleMethod(chessBoard));
+                        showSolution(h2Pc, h2Ne, h2Bf, CKPAStarSearch.solveByLimitedQueenMethod(chessBoard));
                     }
                     if (h3CheckBox.isSelected())
                     {
-                        statusBar.setText("Status : Pawn H's Running...");
+                        statusBar.setText("Status : Castle H's Running...");
                         chessBoard.resetBoard();
-                        showSolution(h3Pc, h3Ne, h3Bf, CKPAStarSearch.solveByPawnMethod(chessBoard));
+                        showSolution(h3Pc, h3Ne, h3Bf, CKPAStarSearch.solveByCastleMethod(chessBoard));
                     }
                     statusBar.setText("Status : All Heuristics're Done!...");
                     progressBar.setValue(100);
@@ -532,6 +535,7 @@ public class MainUI extends JFrame
         probSolver.start();
     }//GEN-LAST:event_startButtonActionPerformed
 
+    @SuppressWarnings("deprecation")
     private void terminateButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_terminateButtonActionPerformed
     {//GEN-HEADEREND:event_terminateButtonActionPerformed
         // TODO add your handling code here:

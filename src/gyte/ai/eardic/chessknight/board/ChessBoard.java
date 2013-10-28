@@ -32,21 +32,20 @@ public class ChessBoard extends JPanel
      *
      * @param row
      * @param column
-     * @param dim
      * @param barPer
      */
-    public ChessBoard(int row, int column, Dimension dim, int barPer)
+    public ChessBoard(int row, int column, int barPer)
     {
         super();
-        initBoard(row, column, dim, barPer);
+        initBoard(row, column, barPer);
         // Init Knight
         knight = new Knight(new Point(row - 1, column - 1), new Point(0, 0));
-        squares[0][0].add(knight);        
+        squares[0][0].add(knight);
     }
 
     public ChessBoard(ChessBoard board)
     {
-        copyBoard(board);        
+        copyBoard(board);
     }
 
     private void copyBoard(ChessBoard board)
@@ -55,7 +54,7 @@ public class ChessBoard extends JPanel
         this.row = board.getRow();
         this.column = board.getColumn();
 
-        setLayout(new GridLayout(row, column));
+        setLayout(board.getLayout());
         setPreferredSize(board.getSize());
         setSize(board.getSize());
         setBounds(0, 0, board.getSize().width, board.getSize().height);
@@ -65,13 +64,13 @@ public class ChessBoard extends JPanel
         knight = new Knight(board.getKnight());
     }
 
-    private void initBoard(int row, int column, Dimension size, int per)
+    private void initBoard(int row, int column, int per)
     {
         this.row = row;
         this.column = column;
-        
-        size = new Dimension(column*50,row*50);
-        
+
+        Dimension size = new Dimension(column * 50, row * 50);
+
         setLayout(new GridLayout(row, column));
         setPreferredSize(size);
         setSize(size);
@@ -124,6 +123,31 @@ public class ChessBoard extends JPanel
         size.width = (int) (size.width * 0.9);
         size.height = (int) (size.height * 0.9);
         setSize(size);
+    }
+
+    public void fitScreen(Dimension screen)
+    {
+        // Get small side of target
+        int scr = screen.height;
+        if (scr > screen.width)
+        {
+            scr = screen.width;
+        }
+
+        if (getSize().height > getSize().width)
+        {
+            while (getSize().height > scr)
+            {
+                zoomIn();
+            }
+        }
+        else
+        {
+            while (getSize().width > scr)
+            {
+                zoomIn();
+            }
+        }
     }
 
     public Square[][] getSquares()
@@ -244,7 +268,7 @@ public class ChessBoard extends JPanel
             }
             k.goNewPosition(a);
         }
-        squares[row-1][column-1].add(knight);
+        squares[row - 1][column - 1].add(knight);
     }
 
 }

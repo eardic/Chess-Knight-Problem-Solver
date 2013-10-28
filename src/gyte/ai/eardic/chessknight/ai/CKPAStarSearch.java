@@ -35,14 +35,14 @@ public class CKPAStarSearch
         return solve(chessBoard, new CKPCastleHeuristic());
     }
 
-    public static SearchAgent solveByPawnMethod(ChessBoard chessBoard)
+    public static SearchAgent solveByLimitedCastleMethod(ChessBoard chessBoard)
     {
-        return solve(chessBoard, new CKPPawnHeuristic());
+        return solve(chessBoard, new CKPLimitedCastleHeuristic());
     }
 
-    public static SearchAgent solveByKingMethod(ChessBoard chessBoard)
+    public static SearchAgent solveByLimitedQueenMethod(ChessBoard chessBoard)
     {
-        return solve(chessBoard, new CKPKingHeuristic());
+        return solve(chessBoard, new CKPLimitedQueenHeuristic());
     }
 
     private static SearchAgent solve(ChessBoard chessBoard, HeuristicFunction heuristic)
